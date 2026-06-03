@@ -162,7 +162,7 @@ class InboundTransfersModel {
             fxTransferLatency: config.metricsClient.getHistogram(
                 'mojaloop_connector_inbound_fx_transfer_latency',
                 'Time taken to process an inbound FX transfer')
-            };
+        };
     }
 
     updateStateWithError(err) {
