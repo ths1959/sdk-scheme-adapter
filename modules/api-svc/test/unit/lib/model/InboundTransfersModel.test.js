@@ -81,7 +81,6 @@ describe('inboundModel', () => {
         mockArgs = JSON.parse(JSON.stringify(mockArguments));
         mockArgs.internalQuoteResponse.expiration = new Date(Date.now());
         mockTxnReqArgs = JSON.parse(JSON.stringify(mockTxnReqquestsArguments));
-        const metricsClient = new MetricsClient();
     });
 
     describe('quoteRequest', () => {
