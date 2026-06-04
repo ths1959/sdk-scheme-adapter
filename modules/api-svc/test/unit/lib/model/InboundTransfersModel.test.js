@@ -45,6 +45,7 @@ const axios = require('axios');
 const { logger } = require('~/lib/logger');
 const { BackendRequests, HTTPResponseError } = require('~/lib/model/lib/requests');
 const Cache = require('~/lib/cache');
+const { MetricsClient } = require('~/lib/metrics');
 const shared = require('~/lib/model/lib/shared');
 const Model = require('~/lib/model').InboundTransfersModel;
 
@@ -80,6 +81,7 @@ describe('inboundModel', () => {
         mockArgs = JSON.parse(JSON.stringify(mockArguments));
         mockArgs.internalQuoteResponse.expiration = new Date(Date.now());
         mockTxnReqArgs = JSON.parse(JSON.stringify(mockTxnReqquestsArguments));
+        const metricsClient = new MetricsClient();
     });
 
     describe('quoteRequest', () => {
@@ -108,6 +110,7 @@ describe('inboundModel', () => {
                 ...config,
                 cache,
                 logger,
+                metricsClient,
             });
         });
 
@@ -1640,5 +1643,92 @@ describe('inboundModel', () => {
             // Should only be called once, no retry
             expect(BackendRequests.__putFxTransfersNotification).toHaveBeenCalledTimes(1);
         });
+    });
+
+    describe('Inbound Metrics Tests', () => {
+    let cache;
+    let model;
+    let metricsClient;
+
+    beforeEach(async () => {
+        metricsClient = new MetricsClient();
+        cache = new Cache({
+        cacheUrl: 'redis://dummy:1234',
+        logger,
+        unsubscribeTimeoutMs: 5000
+        });
+        await cache.connect();
+
+        model = new Model({
+        ...config,
+        cache,
+        logger,
+        metricsClient,
+        });
+    });
+
+    afterEach(async () => {
+        await cache.disconnect();
+    });
+
+    test('should have partyLookupRequests metric initialized', () => {
+        expect(model.metrics.partyLookupRequests).toBeDefined();
+    });
+
+    test('should have partyLookupResponses metric initialized', () => {
+        expect(model.metrics.partyLookupResponses).toBeDefined();
+    });
+
+    test('should have partyLookupLatency metric initialized', () => {
+        expect(model.metrics.partyLookupLatency).toBeDefined();
+    });
+
+    test('should have quoteRequests metric initialized', () => {
+        expect(model.metrics.quoteRequests).toBeDefined();
+    });
+
+    test('should have quoteResponses metric initialized', () => {
+        expect(model.metrics.quoteResponses).toBeDefined();
+    });
+
+    test('should have quoteRequestLatency metric initialized', () => {
+        expect(model.metrics.quoteRequestLatency).toBeDefined();
+    });
+
+    test('should have fxQuoteRequests metric initialized', () => {
+        expect(model.metrics.fxQuoteRequests).toBeDefined();
+    });
+
+    test('should have fxQuoteResponses metric initialized', () => {
+        expect(model.metrics.fxQuoteResponses).toBeDefined();
+    });
+
+    test('should have fxQuoteLatency metric initialized', () => {
+        expect(model.metrics.fxQuoteLatency).toBeDefined();
+    });
+
+    test('should have transferPrepares metric initialized', () => {
+        expect(model.metrics.transferPrepares).toBeDefined();
+    });
+
+    test('should have transferFulfils metric initialized', () => {
+        expect(model.metrics.transferFulfils).toBeDefined();
+    });
+
+    test('should have transferLatency metric initialized', () => {
+        expect(model.metrics.transferLatency).toBeDefined();
+    });
+
+    test('should have fxTransferPrepares metric initialized', () => {
+        expect(model.metrics.fxTransferPrepares).toBeDefined();
+    });
+
+    test('should have fxTransferFulfils metric initialized', () => {
+        expect(model.metrics.fxTransferFulfils).toBeDefined();
+    });
+
+    test('should have fxTransferLatency metric initialized', () => {
+        expect(model.metrics.fxTransferLatency).toBeDefined();
+    });
     });
 });
