@@ -243,7 +243,7 @@ class InboundTransfersModel {
      */
     async getParties(idType, idValue, idSubValue, sourceFspId, headers = {}) {
         try {
-            const startTime = Date.now();
+            const latencyTimer = this.metrics.partyLookupLatency.startTimer();
 
             this.metrics.partyLookupRequests.inc();
             // make a call to the backend to resolve the party lookup
@@ -262,7 +262,7 @@ class InboundTransfersModel {
                 headers.tracestate += `,${TRACESTATE_KEY_CALLBACK_START_TS}=${Date.now()}`;
             }
             this.metrics.partyLookupResponses.inc();
-            this.metrics.partyLookupLatency.observe(Date.now() - startTime);
+            latencyTimer();
             return this._mojaloopRequests.putParties(idType, idValue, idSubValue, mlParty, sourceFspId, headers);
         }
         catch (err) {
@@ -279,7 +279,7 @@ class InboundTransfersModel {
      */
     async quoteRequest(request, sourceFspId, headers = {}) {
         const quoteRequest = request.body;
-        const startTime = Date.now();
+        const latencyTimer = this.metrics.quoteRequestLatency.startTimer();
         // keep track of our state.
         // note that instances of this model typically only live as long as it takes to
         // handle an incoming request and send a response asynchronously, but we hold onto
@@ -354,7 +354,8 @@ class InboundTransfersModel {
 
             log.isInfoEnabled && log.info('quoteRequest is done');
             this.metrics.quoteResponses.inc();
-            this.metrics.quoteRequestLatency.observe(Date.now() - startTime);
+            latencyTimer();
+            
             return res;
         }  catch (err) {
             log.push({ err }).error('Error in quoteRequest');
@@ -469,7 +470,7 @@ class InboundTransfersModel {
     async prepareTransfer(request, sourceFspId, headers) {
         const prepareRequest = request.body;
         try {
-            const startTime = Date.now();
+            const latencyTimer = this.metrics.transferLatency.startTimer();
             // retrieve our quote data
             if (this._allowDifferentTransferTransactionId) {
                 const transactionId = this._ilp.getTransactionObject(prepareRequest.ilpPacket).transactionId;
@@ -628,7 +629,7 @@ class InboundTransfersModel {
                 }, this._patchNotificationGraceTimeMs);
             }
             this.metrics.transferFulfils.inc();
-            this.metrics.transferLatency.observe(Date.now() - startTime);
+            latencyTimer();
             return res;
         } catch(err) {
             this._logger.isErrorEnabled && this._logger.push({ err }).error(`Error in prepareTransfer: ${prepareRequest?.transferId}`);
@@ -696,14 +697,14 @@ class InboundTransfersModel {
     }
 
     async postFxQuotes(request, sourceFspId, headers) {
-        const startTime = Date.now();
+        const latencyTimer = this.metrics.fxQuoteLatency.startTimer();
         const { body } = request;
         try {
             this.data = dto.fxQuoteRequestStateDto(request);
             await this.saveFxState();
 
             const internalRequest = shared.mojaloopFxQuoteRequestToInternal(body);
-
+            this.metrics.fxQuoteRequests.inc();
             const beResponse = await this._backendRequests.postFxQuotes(internalRequest);
             if (!beResponse) {
                 // make an error callback to the source fsp
@@ -725,7 +726,6 @@ class InboundTransfersModel {
                 // think, if we need to store ilpPacket as well
             };
             await this.saveFxState();
-            this.metrics.fxQuoteRequests.inc();
 
             const res = await this._mojaloopRequests.putFxQuotes(body.conversionRequestId, mojaloopResponse, sourceFspId, headers);
 
@@ -737,7 +737,7 @@ class InboundTransfersModel {
             this.data.currentState = SDKStateEnum.FX_QUOTE_WAITING_FOR_ACCEPTANCE;
             await this.saveFxState();
             this.metrics.fxQuoteResponses.inc();
-            this.metrics.fxQuoteLatency.observe(Date.now() - startTime);
+            latencyTimer();
 
             return res;
         } catch (err) {
@@ -751,8 +751,8 @@ class InboundTransfersModel {
     }
 
     async postFxTransfers(request, sourceFspId, headers) {
-        const startTime = Date.now();
         const { body } = request;
+        const latencyTimer = this.metrics.fxTransferLatency.startTimer();
         try {
             // todo: assume commitRequestId from fxTransfer should be same as conversionTerms.conversionId from fxQuotes
             this.data = await this.loadFxState(body.commitRequestId);
@@ -809,8 +809,8 @@ class InboundTransfersModel {
             this.data.currentState = beResponse.conversionState;
             await this.saveFxState();
             this.metrics.fxTransferFulfils.inc();
-            this.metrics.fxTransferLatency.observe(Date.now() - startTime);
-
+            latencyTimer();
+            
             return res;
         } catch (err) {
             this._logger.push({ err }).error(`Error in postFxTransfer  [commitRequestId: ${body.commitRequestId}]`);
