@@ -1670,6 +1670,7 @@ describe('inboundModel', () => {
         });
 
         test('Inbound transfers model should record metrics', async () => {
+            expect(model).toBeDefined();
             const metrics = await metricsClient._prometheusRegister.metrics();
             expect(metrics).toBeTruthy();
             expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_party_lookup_request_count'));
