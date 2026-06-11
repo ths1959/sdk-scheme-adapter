@@ -74,9 +74,12 @@ describe('inboundModel', () => {
     let config;
     let mockArgs;
     let mockTxnReqArgs;
+    let metricsClient;
 
     beforeEach(async () => {
+        metricsClient = new MetricsClient();
         config = JSON.parse(JSON.stringify(defaultConfig));
+        config.metricsClient = metricsClient;
 
         mockArgs = JSON.parse(JSON.stringify(mockArguments));
         mockArgs.internalQuoteResponse.expiration = new Date(Date.now());
@@ -109,7 +112,6 @@ describe('inboundModel', () => {
                 ...config,
                 cache,
                 logger,
-                metricsClient,
             });
         });
 
@@ -1645,89 +1647,46 @@ describe('inboundModel', () => {
     });
 
     describe('Inbound Metrics Tests', () => {
-    let cache;
-    let model;
-    let metricsClient;
+        let cache;
+        let model;
 
-    beforeEach(async () => {
-        metricsClient = new MetricsClient();
-        cache = new Cache({
-        cacheUrl: 'redis://dummy:1234',
-        logger,
-        unsubscribeTimeoutMs: 5000
+        beforeEach(async () => {
+            cache = new Cache({
+                cacheUrl: 'redis://dummy:1234',
+                logger,
+                unsubscribeTimeoutMs: 5000,
+            });
+            await cache.connect();
+
+            model = new Model({
+                ...config,
+                cache,
+                logger,
+            });
         });
-        await cache.connect();
 
-        model = new Model({
-        ...config,
-        cache,
-        logger,
-        metricsClient,
+        afterEach(async () => {
+            await cache.disconnect();
         });
-    });
 
-    afterEach(async () => {
-        await cache.disconnect();
-    });
-
-    test('should have partyLookupRequests metric initialized', () => {
-        expect(model.metrics.partyLookupRequests).toBeDefined();
-    });
-
-    test('should have partyLookupResponses metric initialized', () => {
-        expect(model.metrics.partyLookupResponses).toBeDefined();
-    });
-
-    test('should have partyLookupLatency metric initialized', () => {
-        expect(model.metrics.partyLookupLatency).toBeDefined();
-    });
-
-    test('should have quoteRequests metric initialized', () => {
-        expect(model.metrics.quoteRequests).toBeDefined();
-    });
-
-    test('should have quoteResponses metric initialized', () => {
-        expect(model.metrics.quoteResponses).toBeDefined();
-    });
-
-    test('should have quoteRequestLatency metric initialized', () => {
-        expect(model.metrics.quoteRequestLatency).toBeDefined();
-    });
-
-    test('should have fxQuoteRequests metric initialized', () => {
-        expect(model.metrics.fxQuoteRequests).toBeDefined();
-    });
-
-    test('should have fxQuoteResponses metric initialized', () => {
-        expect(model.metrics.fxQuoteResponses).toBeDefined();
-    });
-
-    test('should have fxQuoteLatency metric initialized', () => {
-        expect(model.metrics.fxQuoteLatency).toBeDefined();
-    });
-
-    test('should have transferPrepares metric initialized', () => {
-        expect(model.metrics.transferPrepares).toBeDefined();
-    });
-
-    test('should have transferFulfils metric initialized', () => {
-        expect(model.metrics.transferFulfils).toBeDefined();
-    });
-
-    test('should have transferLatency metric initialized', () => {
-        expect(model.metrics.transferLatency).toBeDefined();
-    });
-
-    test('should have fxTransferPrepares metric initialized', () => {
-        expect(model.metrics.fxTransferPrepares).toBeDefined();
-    });
-
-    test('should have fxTransferFulfils metric initialized', () => {
-        expect(model.metrics.fxTransferFulfils).toBeDefined();
-    });
-
-    test('should have fxTransferLatency metric initialized', () => {
-        expect(model.metrics.fxTransferLatency).toBeDefined();
-    });
+        test('Inbound transfers model should record metrics', async () => {
+            const metrics = await metricsClient._prometheusRegister.metrics();
+            expect(metrics).toBeTruthy();
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_party_lookup_request_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_party_lookup_response_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_quote_request_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_quote_response_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_quote_request_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_quote_response_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_transfer_prepare_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_transfer_fulfil_response_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_transfer_prepare_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_transfer_fulfil_response_count'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_party_lookup_latency'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_quote_request_latency'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_transfer_latency'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_quote_latency'));
+            expect(metrics).toEqual(expect.stringContaining('mojaloop_connector_inbound_fx_transfer_latency'));
+        });
     });
 });
