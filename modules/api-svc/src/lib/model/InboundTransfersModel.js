@@ -105,23 +105,22 @@ class InboundTransfersModel {
             logger: config.logger,
         });
         this._cacheTtl = config.redisCacheTtl;
-        const { getCounter, getHistogram } = config.metricsClient;
         this.metrics = {
-            partyLookupRequests:  getCounter('mojaloop_connector_inbound_party_lookup_request_count',       'Count of inbound party lookup requests received'),
-            partyLookupResponses: getCounter('mojaloop_connector_inbound_party_lookup_response_count',      'Count of inbound party lookup responses sent'),
-            quoteRequests:        getCounter('mojaloop_connector_inbound_quote_request_count',              'Count of inbound quote requests received'),
-            quoteResponses:       getCounter('mojaloop_connector_inbound_quote_response_count',             'Count of inbound quote responses sent'),
-            fxQuoteRequests:      getCounter('mojaloop_connector_inbound_fx_quote_request_count',           'Count of inbound FX quote requests received'),
-            fxQuoteResponses:     getCounter('mojaloop_connector_inbound_fx_quote_response_count',          'Count of inbound FX quote responses sent'),
-            transferPrepares:     getCounter('mojaloop_connector_inbound_transfer_prepare_count',           'Count of inbound transfer prepare requests received'),
-            transferFulfils:      getCounter('mojaloop_connector_inbound_transfer_fulfil_response_count',   'Count of inbound transfer fulfil responses sent'),
-            fxTransferPrepares:   getCounter('mojaloop_connector_inbound_fx_transfer_prepare_count',        'Count of inbound FX transfer prepare requests received'),
-            fxTransferFulfils:    getCounter('mojaloop_connector_inbound_fx_transfer_fulfil_response_count','Count of inbound FX transfer fulfil responses sent'),
-            partyLookupLatency:   getHistogram('mojaloop_connector_inbound_party_lookup_latency',           'Time taken to process an inbound party lookup request'),
-            quoteRequestLatency:  getHistogram('mojaloop_connector_inbound_quote_request_latency',          'Time taken to process an inbound quote request'),
-            transferLatency:      getHistogram('mojaloop_connector_inbound_transfer_latency',               'Time taken to process an inbound transfer prepare'),
-            fxQuoteLatency:       getHistogram('mojaloop_connector_inbound_fx_quote_latency',               'Time taken to process an inbound FX quote request'),
-            fxTransferLatency:    getHistogram('mojaloop_connector_inbound_fx_transfer_latency',            'Time taken to process an inbound FX transfer'),
+            partyLookupRequests:  config.metricsClient.getCounter('mojaloop_connector_inbound_party_lookup_request_count',       'Count of inbound party lookup requests received'),
+            partyLookupResponses: config.metricsClient.getCounter('mojaloop_connector_inbound_party_lookup_response_count',      'Count of inbound party lookup responses sent'),
+            quoteRequests:        config.metricsClient.getCounter('mojaloop_connector_inbound_quote_request_count',              'Count of inbound quote requests received'),
+            quoteResponses:       config.metricsClient.getCounter('mojaloop_connector_inbound_quote_response_count',             'Count of inbound quote responses sent'),
+            fxQuoteRequests:      config.metricsClient.getCounter('mojaloop_connector_inbound_fx_quote_request_count',           'Count of inbound FX quote requests received'),
+            fxQuoteResponses:     config.metricsClient.getCounter('mojaloop_connector_inbound_fx_quote_response_count',          'Count of inbound FX quote responses sent'),
+            transferPrepares:     config.metricsClient.getCounter('mojaloop_connector_inbound_transfer_prepare_count',           'Count of inbound transfer prepare requests received'),
+            transferFulfils:      config.metricsClient.getCounter('mojaloop_connector_inbound_transfer_fulfil_response_count',   'Count of inbound transfer fulfil responses sent'),
+            fxTransferPrepares:   config.metricsClient.getCounter('mojaloop_connector_inbound_fx_transfer_prepare_count',        'Count of inbound FX transfer prepare requests received'),
+            fxTransferFulfils:    config.metricsClient.getCounter('mojaloop_connector_inbound_fx_transfer_fulfil_response_count','Count of inbound FX transfer fulfil responses sent'),
+            partyLookupLatency:   config.metricsClient.getHistogram('mojaloop_connector_inbound_party_lookup_latency',           'Time taken to process an inbound party lookup request'),
+            quoteRequestLatency:  config.metricsClient.getHistogram('mojaloop_connector_inbound_quote_request_latency',          'Time taken to process an inbound quote request'),
+            transferLatency:      config.metricsClient.getHistogram('mojaloop_connector_inbound_transfer_latency',               'Time taken to process an inbound transfer prepare'),
+            fxQuoteLatency:       config.metricsClient.getHistogram('mojaloop_connector_inbound_fx_quote_latency',               'Time taken to process an inbound FX quote request'),
+            fxTransferLatency:    config.metricsClient.getHistogram('mojaloop_connector_inbound_fx_transfer_latency',            'Time taken to process an inbound FX transfer'),
         };
     }
 

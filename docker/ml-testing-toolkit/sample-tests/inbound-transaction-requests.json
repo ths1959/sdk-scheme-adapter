@@ -21,7 +21,7 @@
           "operationPath": "/transactionRequests",
           "path": "/transactionRequests",
           "method": "post",
-          "url": "http://host.docker.internal:4000",
+          "url": "http://sdk-scheme-adapter-api-svc:4000",
           "body": {
             "transactionRequestId": "{$function.generic.generateUUID}",
             "payer": {

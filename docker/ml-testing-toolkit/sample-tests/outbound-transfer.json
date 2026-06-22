@@ -22,7 +22,7 @@
           "operationPath": "/transfers",
           "path": "/transfers",
           "method": "post",
-          "url": "http://host.docker.internal:4001",
+          "url": "http://sdk-scheme-adapter-api-svc:4001",
           "body": {
             "homeTransactionId": "abc123",
             "from": {
