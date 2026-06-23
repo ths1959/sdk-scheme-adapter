@@ -76,8 +76,11 @@ describe('inboundModel', () => {
     let mockTxnReqArgs;
     let metricsClient;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         metricsClient = new MetricsClient();
+    });
+
+    beforeEach(async () => {
         config = JSON.parse(JSON.stringify(defaultConfig));
         config.metricsClient = metricsClient;
 
@@ -396,14 +399,14 @@ describe('inboundModel', () => {
         test('getTransfer should return not found error', async () => {
             const TRANSFER_ID = 'fake-transfer-id';
 
-            BackendRequests.__getTransfers = jest.fn().mockReturnValue(
-            Promise.reject(new HTTPResponseError({
+            BackendRequests.__getTransfers = jest.fn().mockRejectedValue(
+            new HTTPResponseError({
                 res: {
                 data: {
                     statusCode: '3208'
                 },
                 }
-            })));
+            }));
 
             const model = new Model({
             ...config,
@@ -843,14 +846,14 @@ describe('inboundModel', () => {
         test('getBulkTransfer should return not found error', async () => {
             const BULK_TRANSFER_ID = 'fake-bulk-transfer-id';
 
-            BackendRequests.__getBulkTransfers = jest.fn().mockReturnValue(
-                Promise.reject(new HTTPResponseError({
+            BackendRequests.__getBulkTransfers = jest.fn().mockRejectedValue(
+                new HTTPResponseError({
                     res: {
                         data: {
                             statusCode: '3208'
                         },
                     }
-                })));
+                }));
 
             const model = new Model({
                 ...config,
