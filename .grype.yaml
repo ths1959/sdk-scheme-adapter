@@ -121,6 +121,23 @@ ignore:
     reason: "undici"
   - vulnerability: GHSA-48c2-rrv3-qjmp
     reason: "yaml"
+  - vulnerability: GHSA-6v5v-wf23-fmfq
+    package:
+      name: markdown-it
+      versions:
+        - 12.3.2
+    reason: >-
+      Fix requires markdown-it v14.2.0 (major version bump). shins and widdershins
+      depend on the 12.x API and are incompatible with 14.x as of 2026-06-23.
+  - vulnerability: GHSA-vmf3-w455-68vh
+    package:
+      name: tar
+      versions:
+        - 6.2.1
+    reason: >-
+      tar 6.2.1 is pinned as a transitive dependency of cacache. No fix exists in
+      the 6.x branch; upgrading cacache's tar to 7.x would introduce breaking
+      changes as of 2026-06-23.
 output:
   - table
   - json

@@ -128,7 +128,7 @@ _Note that these instructions are for Linux based systems. For Mac and/or Window
 
    Use the following command to tell the mock DFSP backend to initiate an outbound money transfer via the scheme-adapter:
 
-   _Dont forget to substitute in the correct IP address for the Mock DFSP Backend container_
+   _Don't forget to substitute in the correct IP address for the Mock DFSP Backend container_
 
    ```bash
    curl -X POST \
