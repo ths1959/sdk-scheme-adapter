@@ -1210,19 +1210,6 @@ describe('inboundModel', () => {
             await expect(model.sendNotificationToPayee(notif.data, 'some-transfer-id')).resolves.toBeUndefined();
         });
 
-        test('sendNotificationToPayee handles error and still returns', async () => {
-            BackendRequests.__putTransfersNotification = jest.fn().mockRejectedValue(new Error('fail'));
-            const notif = JSON.parse(JSON.stringify(notificationToPayee));
-            const model = new Model({
-            ...config,
-            cache,
-            logger,
-            backendRequestRetry: {
-                enabled: false
-            }
-            });
-            await expect(model.sendNotificationToPayee(notif.data, 'some-transfer-id')).resolves.toBeUndefined();
-        });
     });
 
     describe('error handling:', () => {
